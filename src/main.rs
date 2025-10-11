@@ -64,6 +64,15 @@ enum Commands {
         /// Add custom expert rule for arid node detection
         #[arg(long, value_name = "PATTERN")]
         add_expert_rule: Option<String>,
+
+        #[arg(
+            short,
+            long,
+            value_name = "PATH",
+            num_args = 0..=1,
+            default_missing_value = "./mutation.db"
+        )]
+        sqlite: Option<PathBuf>,
     },
     /// Analyze mutants
     Analyze {
@@ -105,6 +114,7 @@ async fn main() -> Result<()> {
             only_security_mutations,
             disable_ast_filtering,
             add_expert_rule,
+            sqlite,
         } => {
             let skip_lines_map = if let Some(path) = skip_lines {
                 read_skip_lines(&path)?
@@ -144,6 +154,10 @@ async fn main() -> Result<()> {
                 println!("Custom expert rule will be applied: {}", expert_rule);
             }
 
+            if sqlite.is_some() {
+                println!("Sqlite config: {:?}", sqlite);
+            }
+
             mutation::run_mutation(
                 if pr == 0 { None } else { Some(pr) },
                 file,
@@ -155,6 +169,7 @@ async fn main() -> Result<()> {
                 skip_lines_map,
                 !disable_ast_filtering,
                 add_expert_rule,
+                sqlite,
             )
             .await?;
         }

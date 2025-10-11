@@ -28,6 +28,7 @@
 //!         HashMap::new(),          // skip_lines
 //!         true,                    // enable_ast_filtering
 //!         None,                    // custom_expert_rule
+//!         None,                    // sqlite
 //!     ).await?;
 //!
 //!     Ok(())
@@ -37,12 +38,12 @@
 pub mod analyze;
 pub mod ast_analysis;
 pub mod coverage;
+pub mod database;
 pub mod error;
 pub mod git_changes;
 pub mod mutation;
 pub mod operators;
 pub mod report;
-pub mod database;
 
 pub use error::{MutationError, Result};
 

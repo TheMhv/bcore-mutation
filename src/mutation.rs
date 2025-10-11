@@ -29,7 +29,12 @@ pub async fn run_mutation(
     skip_lines: HashMap<String, Vec<usize>>,
     enable_ast_filtering: bool,
     custom_expert_rule: Option<String>,
+    sqlite: Option<PathBuf>,
 ) -> Result<()> {
+    if sqlite.is_some() {
+        todo!("Implement Sqlite");
+    }
+
     if let Some(file_path) = file {
         let file_str = file_path.to_string_lossy().to_string();
         let is_unit_test = file_str.contains("test") && !file_str.contains(".py");
