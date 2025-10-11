@@ -42,6 +42,7 @@ pub mod git_changes;
 pub mod mutation;
 pub mod operators;
 pub mod report;
+pub mod database;
 
 pub use error::{MutationError, Result};
 
