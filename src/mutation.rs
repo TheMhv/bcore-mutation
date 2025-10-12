@@ -32,7 +32,8 @@ pub async fn run_mutation(
     sqlite: Option<PathBuf>,
 ) -> Result<()> {
     if sqlite.is_some() {
-        todo!("Implement Sqlite");
+        todo!("Initialize SQLite database");
+        todo!("Create a run");
     }
 
     if let Some(file_path) = file {
@@ -456,5 +457,29 @@ mod tests {
 
         let content = fs::read_to_string(folder_path.join("test.mutant.0.cpp")).unwrap();
         assert_eq!(content, "mutated content");
+    }
+
+    #[test]
+    #[ignore]
+    fn test_sqlite_initialize() {
+        todo!("Test if can create sqlite")
+    }
+
+    #[test]
+    #[ignore]
+    fn test_sqlite_create_projects() {
+        todo!("Test if can create projects")
+    }
+
+    #[test]
+    #[ignore]
+    fn test_sqlite_create_runs() {
+        todo!("Test if can create a run")
+    }
+
+    #[test]
+    #[ignore]
+    fn test_sqlite_insert_mutant() {
+        todo!("Test if can insert mutants")
     }
 }
