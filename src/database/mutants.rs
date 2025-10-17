@@ -1,3 +1,4 @@
+use core::str;
 use std::{
     fmt::{self, Display, Formatter},
     str::FromStr,
@@ -6,9 +7,10 @@ use std::{
 use rusqlite::{
     params,
     types::{FromSql, FromSqlResult, ValueRef},
+    Connection,
 };
 
-use crate::database::{database::Database, database::Table};
+use crate::database::{database::Table, Database};
 
 enum MutantStatus {
     Pending,
@@ -22,7 +24,7 @@ enum MutantStatus {
     Unproductive,
 }
 
-struct Mutant {
+pub struct Mutant {
     run_id: usize,
     diff: String,
     patch_hash: String,
@@ -100,9 +102,13 @@ impl FromStr for MutantStatus {
     }
 }
 
-impl Table<Mutant> for Database {
-    fn create(&self) {
-        self.conn.execute(
+pub struct Mutants {
+    conn: &Connection,
+}
+
+impl Mutants {
+    pub fn init(conn: &Connection) -> Mutants {
+        conn.execute(
             "CREATE TABLE IF NOT EXISTS mutants (
                 id                  INTEGER PRIMARY KEY,
                 run_id              INTEGER NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
@@ -118,6 +124,8 @@ impl Table<Mutant> for Database {
             )",
             ())
             .unwrap();
+
+        Mutants { conn }
     }
 
     fn add(&self, data: Mutant) -> Mutant {
@@ -203,5 +211,23 @@ impl Table<Mutant> for Database {
             .unwrap();
 
         rows > 0
+    }
+}
+
+impl Table<Mutant> for Database {
+    fn add(&self, data: Mutant) -> Mutant {
+        Mutants::add(&self.mutants, data)
+    }
+
+    fn get(&self, id: usize) -> Mutant {
+        Mutants::get(&self.mutants, id)
+    }
+
+    fn modify(&self, id: usize, data: Mutant) -> Mutant {
+        Mutants::modify(&self.mutants, id, data)
+    }
+
+    fn delete(&self, id: usize) -> bool {
+        Mutants::delete(&self.mutants, id)
     }
 }

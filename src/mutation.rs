@@ -1,4 +1,5 @@
 use crate::ast_analysis::{filter_mutatable_lines, AridNodeDetector};
+use crate::database::Database;
 use crate::error::{MutationError, Result};
 use crate::git_changes::{get_changed_files, get_lines_touched};
 use crate::operators::{
@@ -32,8 +33,7 @@ pub async fn run_mutation(
     sqlite: Option<PathBuf>,
 ) -> Result<()> {
     if sqlite.is_some() {
-        todo!("Initialize SQLite database");
-        todo!("Create a run");
+        let db = Database::init(sqlite.unwrap().to_str());
     }
 
     if let Some(file_path) = file {

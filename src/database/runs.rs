@@ -1,30 +1,22 @@
-use rusqlite::params;
+use rusqlite::{params, Connection};
 
-use crate::database::{database::Database, database::Table};
+use crate::database::{database::Table, Database};
 
-struct Run {
+pub struct Run {
     project_id: usize,
     commit_hash: String,
     pr_number: usize,
     tool_version: String,
 }
 
-impl Run {
-    fn new(project_id: usize, commit_hash: String, pr_number: usize, tool_version: String) -> Run {
-        Run {
-            project_id,
-            commit_hash,
-            pr_number,
-            tool_version,
-        }
-    }
+pub struct Runs {
+    conn: &Connection,
 }
 
-impl Table<Run> for Database {
-    fn create(&self) {
-        self.conn
-            .execute(
-                "CREATE TABLE IF NOT EXISTS runs (
+impl Runs {
+    pub fn init(conn: &Connection) -> Runs {
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS runs (
                     id INTEGER PRIMARY KEY,
                     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
                     commit_hash TEXT NOT NULL,
@@ -32,23 +24,24 @@ impl Table<Run> for Database {
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     tool_version TEXT
                 )",
-                (),
-            )
-            .unwrap();
+            (),
+        )
+        .unwrap();
 
-        self.conn
+        conn
             .execute(
                 "CREATE INDEX IF NOT EXISTS idx_runs_project_created ON runs(project_id, created_at DESC)",
                 (),
             )
             .unwrap();
 
-        self.conn
-            .execute(
-                "CREATE INDEX IF NOT EXISTS idx_runs_commit ON runs(commit_hash)",
-                (),
-            )
-            .unwrap();
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_runs_commit ON runs(commit_hash)",
+            (),
+        )
+        .unwrap();
+
+        Runs { conn }
     }
 
     fn add(&self, data: Run) -> Run {
@@ -90,5 +83,23 @@ impl Table<Run> for Database {
             .unwrap();
 
         rows > 0
+    }
+}
+
+impl Table<Run> for Database {
+    fn add(&self, data: Run) -> Run {
+        Runs::add(&self.runs, data)
+    }
+
+    fn get(&self, id: usize) -> Run {
+        Runs::get(&self.runs, id)
+    }
+
+    fn modify(&self, id: usize, data: Run) -> Run {
+        Runs::modify(&self.runs, id, data)
+    }
+
+    fn delete(&self, id: usize) -> bool {
+        Runs::delete(&self.runs, id)
     }
 }

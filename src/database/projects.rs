@@ -1,38 +1,40 @@
-use rusqlite::params;
+use rusqlite::{params, Connection};
 
-use crate::database::{database::Database, database::Table};
+use crate::database::{database::Table, Database};
 
-struct Project {
-    name: String,
-    repository_url: String,
+pub struct Project {
+    pub name: String,
+    pub repository_url: String,
 }
 
-impl Project {
-    fn new(name: String, repository_url: String) -> Project {
-        Project {
-            name,
-            repository_url,
-        }
-    }
+pub struct Projects {
+    conn: &Connection,
 }
 
-impl Table<Project> for Database {
-    fn create(&self) {
-        self.conn
-            .execute(
-                "CREATE TABLE IF NOT EXISTS projects (
+impl Projects {
+    pub fn init(conn: &Connection) -> Projects {
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS projects (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 repository_url TEXT,
                 UNIQUE(name),
                 UNIQUE(repository_url)
             )",
-                (),
-            )
-            .unwrap();
+            (),
+        )
+        .unwrap();
+
+        conn.execute(
+            "INSERT OR IGNORE INTO projects (name, repository_url) VALUES (?1, ?2)",
+            ("Bitcoin Core", "https://github.com/bitcoin/bitcoin"),
+        )
+        .unwrap();
+
+        Projects { conn }
     }
 
-    fn add(&self, data: Project) -> Project {
+    pub fn add(&self, data: Project) -> Project {
         self.conn
             .execute(
                 "INSERT INTO projects (name, repository_url) VALUES (?1, ?2)",
@@ -72,5 +74,23 @@ impl Table<Project> for Database {
             .unwrap();
 
         rows > 0
+    }
+}
+
+impl Table<Project> for Database {
+    fn add(&self, data: Project) -> Project {
+        Projects::add(&self.projects, data)
+    }
+
+    fn get(&self, id: usize) -> Project {
+        Projects::get(&self.projects, id)
+    }
+
+    fn modify(&self, id: usize, data: Project) -> Project {
+        Projects::modify(&self.projects, id, data)
+    }
+
+    fn delete(&self, id: usize) -> bool {
+        Projects::delete(&self.projects, id)
     }
 }
